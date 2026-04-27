@@ -1,5 +1,11 @@
-const CACHE = 'stille-v1';
-const ASSETS = ['/', '/index.html', '/manifest.json'];
+const CACHE = 'stille-v2';
+const ASSETS = [
+  '/Stille/',
+  '/Stille/index.html',
+  '/Stille/manifest.json',
+  '/Stille/icon-192.png',
+  '/Stille/icon-512.png'
+];
 
 self.addEventListener('install', e => {
   e.waitUntil(
