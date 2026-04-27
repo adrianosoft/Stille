@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0c0b09">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<title>Stille</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0c0b09; --surface: #1e1b16; --border: #3a342a;
+    --text: #ede5d8; --muted: #9a8e7e; --accent: #c4a87a; --danger: #b05040;
+  }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Jost', sans-serif; overflow-x: hidden; }
+  body { min-height: 100vh; }
+
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ── HOME ── */
+  #home { padding: 2rem 1.5rem; overflow-y: auto; }
+  .home-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2.8rem; }
+  .app-title { font-family: 'Cormorant Garamond', serif; font-size: 1.7rem; font-weight: 300; letter-spacing: .06em; }
+  .app-subtitle { font-size: .62rem; letter-spacing: .28em; color: var(--muted); text-transform: uppercase; margin-top: .3rem; }
+  .streak-num { font-family: 'Cormorant Garamond', serif; font-size: 2.6rem; font-weight: 300; color: var(--accent); line-height: 1; text-align: right; }
+  .streak-label { font-size: .6rem; letter-spacing: .22em; color: var(--muted); text-transform: uppercase; text-align: right; }
+  .last-session { padding: .8rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-bottom: 2.2rem; }
+  .last-label { font-size: .6rem; letter-spacing: .22em; color: var(--muted); text-transform: uppercase; margin-bottom: .45rem; }
+  .last-info { font-size: .82rem; color: var(--text); font-weight: 300; }
+  .program-list { display: flex; flex-direction: column; gap: .7rem; }
+  .program-item { display: flex; align-items: center; gap: .75rem; padding: 1rem; background: var(--surface); border: 1px solid var(--border); }
+  .program-name { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 400; }
+  .program-meta { font-size: .65rem; color: var(--muted); margin-top: .2rem; letter-spacing: .05em; }
+  .program-actions { display: flex; gap: .5rem; flex-shrink: 0; }
+  .btn-edit { background: none; border: none; color: var(--muted); cursor: pointer; padding: .5rem .6rem; font-family: 'Jost'; font-size: .65rem; letter-spacing: .15em; }
+  .btn-start { background: var(--accent); border: none; color: #0a0906; cursor: pointer; padding: .55rem 1.1rem; font-family: 'Jost'; font-size: .68rem; letter-spacing: .15em; font-weight: 500; }
+  .btn-add { display: block; width: 100%; margin-top: .9rem; background: none; border: 1px dashed var(--border); color: var(--muted); padding: .85rem; cursor: pointer; font-family: 'Jost'; font-size: .65rem; letter-spacing: .22em; text-transform: uppercase; }
+
+  /* ── EDITOR ── */
+  #editor { padding: 2rem 1.5rem; overflow-y: auto; }
+  .editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+  .btn-back { background: none; border: none; color: var(--muted); cursor: pointer; font-family: 'Jost'; font-size: .65rem; letter-spacing: .15em; padding: 0; }
+  .editor-title { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 300; }
+  .field { margin-bottom: 1.4rem; }
+  .field label { display: block; font-size: .6rem; letter-spacing: .22em; color: var(--muted); text-transform: uppercase; margin-bottom: .45rem; }
+  .field input, .field select {
+    width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    padding: .65rem .8rem; font-family: 'Jost'; font-size: .85rem; outline: none; appearance: none; -webkit-appearance: none;
+  }
+  .field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235e5850'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .8rem center; background-color: var(--surface); cursor: pointer; }
+  .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+  .btn-mode { padding: .65rem; background: var(--surface); border: 1px solid var(--border); color: var(--muted); cursor: pointer; font-family: 'Jost'; font-size: .68rem; letter-spacing: .15em; transition: all .2s; }
+  .btn-mode.active { background: var(--accent); border-color: var(--accent); color: #0a0906; }
+  .sound-divider { margin-top: 1.5rem; padding-top: 1.4rem; border-top: 1px solid var(--border); }
+  .sound-row { margin-bottom: 1.1rem; }
+  .sound-row-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .45rem; }
+  .sound-label { font-size: .6rem; letter-spacing: .22em; color: var(--muted); text-transform: uppercase; }
+  .btn-test { background: none; border: none; color: var(--accent); cursor: pointer; font-family: 'Jost'; font-size: .62rem; letter-spacing: .1em; }
+  .editor-actions { margin-top: 2rem; display: flex; flex-direction: column; gap: .7rem; }
+  .btn-save { padding: .9rem; border: none; font-family: 'Jost'; font-size: .72rem; letter-spacing: .22em; font-weight: 500; cursor: pointer; transition: background .2s; }
+  .btn-delete { padding: .8rem; background: none; border: 1px solid var(--danger); color: var(--danger); cursor: pointer; font-family: 'Jost'; font-size: .68rem; letter-spacing: .15em; }
+  .spacer { height: 2rem; }
+
+  /* ── SESSION ── */
+  #session { background: #080706; align-items: center; justify-content: center; position: relative; overflow: hidden; height: 100vh; }
+  .progress-line { position: absolute; bottom: 0; left: 0; height: 2px; background: var(--accent); opacity: .6; transition: width .4s linear; }
+  .session-timer { font-family: 'Cormorant Garamond', serif; font-size: 5.8rem; font-weight: 300; color: #e8dfd0; letter-spacing: .06em; line-height: 1; transition: color 2s ease; }
+  .session-timer.ending { color: var(--accent); }
+  .session-name { font-size: .62rem; letter-spacing: .28em; color: #6a6055; text-transform: uppercase; margin-top: 1.6rem; }
+  .btn-abort { position: absolute; bottom: 2.5rem; background: none; border: 1px solid #3a3028; color: #9a8e7e; cursor: pointer; font-family: 'Jost'; font-size: .72rem; letter-spacing: .22em; text-transform: uppercase; padding: .7rem 1.8rem; transition: all .3s; border-radius: 2px; }
+  .btn-abort:active { border-color: var(--accent); color: var(--accent); }
+
+  /* ── END ── */
+  #end { background: var(--bg); align-items: center; justify-content: center; height: 100vh; }
+  .end-label { font-family: 'Cormorant Garamond', serif; font-size: .85rem; font-style: italic; color: var(--muted); letter-spacing: .2em; margin-bottom: 2.2rem; }
+  .end-mins { font-family: 'Cormorant Garamond', serif; font-size: 4.5rem; font-weight: 300; color: var(--accent); line-height: 1; }
+  .end-prog { font-size: .72rem; color: var(--muted); letter-spacing: .15em; margin-top: .6rem; }
+  .end-streak-wrap { margin-top: 3rem; text-align: center; }
+  .end-streak-num { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; color: var(--text); font-weight: 300; line-height: 1; }
+  .end-streak-label { font-size: .6rem; color: var(--muted); letter-spacing: .22em; text-transform: uppercase; margin-top: .3rem; }
+  .btn-done { margin-top: 4rem; background: none; border: 1px solid var(--border); color: var(--muted); padding: .8rem 2.8rem; cursor: pointer; font-family: 'Jost'; font-size: .68rem; letter-spacing: .25em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="home" class="screen active">
+  <div class="home-header">
+    <div>
+      <div class="app-title">Stille</div>
+      <div class="app-subtitle">MBSR Praxis</div>
+    </div>
+    <div>
+      <div class="streak-num" id="streakNum">0</div>
+      <div class="streak-label" id="streakLabel">TAGE</div>
+    </div>
+  </div>
+  <div class="last-session" id="lastSession" style="display:none">
+    <div class="last-label">Letzte Sitzung</div>
+    <div class="last-info" id="lastInfo"></div>
+  </div>
+  <div class="program-list" id="programList"></div>
+  <button class="btn-add" onclick="openNewEditor()">+ Programm hinzufügen</button>
+</div>
+
+<!-- EDITOR -->
+<div id="editor" class="screen">
+  <div class="editor-header">
+    <button class="btn-back" onclick="showScreen('home')">← ZURÜCK</button>
+    <div class="editor-title" id="editorTitle">Neues Programm</div>
+    <div style="width:4rem"></div>
+  </div>
+  <div class="field">
+    <label>Name</label>
+    <input type="text" id="eName" placeholder="z.B. Morgen">
+  </div>
+  <div class="field">
+    <label>Modus</label>
+    <div class="mode-grid">
+      <button class="btn-mode active" id="modeSimple" onclick="setMode('simple')">EINFACH</button>
+      <button class="btn-mode" id="modeInterval" onclick="setMode('interval')">INTERVALL</button>
+    </div>
+  </div>
+  <div class="field">
+    <label>Gesamtdauer (Minuten)</label>
+    <input type="number" id="eDuration" min="1" max="120" value="13">
+  </div>
+  <div class="field" id="intervalField" style="display:none">
+    <label id="intervalLabel">Anzahl Intervalle</label>
+    <input type="number" id="eIntervals" min="2" max="20" value="4">
+  </div>
+  <div class="sound-divider">
+    <div class="sound-row" id="rowBg">
+      <div class="sound-row-header">
+        <span class="sound-label">Hintergrund</span>
+        <button class="btn-test" onclick="testSound('bg')">▶ Test</button>
+      </div>
+      <select id="sBg" onchange="updateTestBtns()">
+        <option value="none">—</option>
+        <option value="pink" selected>Rosa Rauschen</option>
+        <option value="drone">Tiefer Drone</option>
+        <option value="binaural_theta">Binaural Theta 6Hz ♦ Kopfhörer</option>
+        <option value="binaural_alpha">Binaural Alpha 10Hz ♦ Kopfhörer</option>
+      </select>
+    </div>
+    <div class="sound-row">
+      <div class="sound-row-header">
+        <span class="sound-label">Start-Signal</span>
+        <button class="btn-test" onclick="testSound('start')">▶ Test</button>
+      </div>
+      <select id="sStart">
+        <option value="none">—</option>
+        <option value="bowl_small">Klangschale klein</option>
+        <option value="bowl_large" selected>Klangschale groß</option>
+        <option value="gong">Tempel-Gong</option>
+        <option value="bell">Zen-Bell</option>
+        <option value="triple_gong">Drei Gongs ↓</option>
+      </select>
+    </div>
+    <div class="sound-row" id="rowInterval" style="display:none">
+      <div class="sound-row-header">
+        <span class="sound-label">Intervall-Signal</span>
+        <button class="btn-test" onclick="testSound('interval')">▶ Test</button>
+      </div>
+      <select id="sInterval">
+        <option value="none">—</option>
+        <option value="bowl_small">Klangschale klein</option>
+        <option value="bowl_large">Klangschale groß</option>
+        <option value="gong">Tempel-Gong</option>
+        <option value="bell" selected>Zen-Bell</option>
+        <option value="triple_gong">Drei Gongs ↓</option>
+      </select>
+    </div>
+    <div class="sound-row">
+      <div class="sound-row-header">
+        <span class="sound-label">End-Signal</span>
+        <button class="btn-test" onclick="testSound('end')">▶ Test</button>
+      </div>
+      <select id="sEnd">
+        <option value="bowl_small">Klangschale klein</option>
+        <option value="bowl_large">Klangschale groß</option>
+        <option value="gong">Tempel-Gong</option>
+        <option value="bell">Zen-Bell</option>
+        <option value="triple_gong" selected>Drei Gongs ↓</option>
+      </select>
+    </div>
+  </div>
+  <div class="editor-actions">
+    <button class="btn-save" id="btnSave" onclick="saveProgram()">SPEICHERN</button>
+    <button class="btn-delete" id="btnDelete" onclick="deleteProgram()" style="display:none">LÖSCHEN</button>
+  </div>
+  <div class="spacer"></div>
+</div>
+
+<!-- SESSION -->
+<div id="session" class="screen">
+  <div class="progress-line" id="progressLine" style="width:0%"></div>
+  <div class="session-timer" id="sessionTimer">00:00</div>
+  <div class="session-name" id="sessionName"></div>
+  <button id="btnAbort" onclick="abortSession()" style="position:absolute;bottom:2.5rem;background:#1e1a14;border:1px solid #7a6e5e;color:#c8bfb0;font-family:'Jost',sans-serif;font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;padding:.85rem 2.2rem;cursor:pointer;border-radius:2px;">BEENDEN</button>
+</div>
+
+<!-- END -->
+<div id="end" class="screen">
+  <div class="end-label">vollständig</div>
+  <div class="end-mins" id="endMins">0′</div>
+  <div class="end-prog" id="endProg"></div>
+  <div class="end-streak-wrap">
+    <div class="end-streak-num" id="endStreakNum">0</div>
+    <div class="end-streak-label" id="endStreakLabel">TAG</div>
+  </div>
+  <button class="btn-done" onclick="showScreen('home')">Fertig</button>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   AUDIO ENGINE
+═══════════════════════════════════════════ */
+let actx = null;
+let bgNodes = [];
+let bgGain = null;
+let bgTestTimeout = null;
+
+function getCtx() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+
+function osc(ctx, freq, amp, decay, dest, t) {
+  const o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = 'sine'; o.frequency.value = freq;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(amp, t + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + decay);
+  o.connect(g); g.connect(dest);
+  o.start(t); o.stop(t + decay + 0.2);
+}
+
+function playBowl(size, vol) {
+  const ctx = getCtx(), t = ctx.currentTime;
+  const f = size === 'small' ? 800 : 220;
+  const beat = size === 'small' ? 3 : 1.5;
+  const dec = size === 'small' ? [4.5,2.8,1.6,0.9,4.5] : [13,8,4.5,2.8,13];
+  const m = ctx.createGain(); m.gain.value = (vol||0.65)*0.28; m.connect(ctx.destination);
+  [[f,1.0],[f*2.756,0.55],[f*5.404,0.28],[f*8.932,0.12],[f+beat,0.35]]
+    .forEach(([fr,a],i) => osc(ctx,fr,a,dec[i],m,t));
+}
+
+function playGong(vol) {
+  const ctx = getCtx(), t = ctx.currentTime;
+  const m = ctx.createGain(); m.gain.value = (vol||0.65)*0.2; m.connect(ctx.destination);
+  [[150,1.0,14],[285,0.7,9],[450,0.42,6],[680,0.22,3.5],[950,0.1,2],[152,0.38,14]]
+    .forEach(([f,a,d]) => osc(ctx,f,a,d,m,t));
+}
+
+function playBell(vol) {
+  const ctx = getCtx(), t = ctx.currentTime, f = 528;
+  const m = ctx.createGain(); m.gain.value = (vol||0.65)*0.26; m.connect(ctx.destination);
+  [[f,1.0,5.5],[f*2,0.48,3.8],[f*3.5,0.22,2.2],[f*5.4,0.09,1.3],[f+2,0.28,5.5]]
+    .forEach(([fr,a,d]) => osc(ctx,fr,a,d,m,t));
+}
+
+function playTriple(vol) {
+  playGong(vol);
+  setTimeout(() => playGong((vol||0.65)*0.82), 2000);
+  setTimeout(() => playGong((vol||0.65)*0.65), 3800);
+}
+
+function playSound(type, vol) {
+  if (!type || type === 'none') return;
+  const v = vol || 0.65;
+  ({bowl_small:()=>playBowl('small',v), bowl_large:()=>playBowl('large',v),
+    gong:()=>playGong(v), bell:()=>playBell(v), triple_gong:()=>playTriple(v)})[type]?.();
+}
+
+function stopBg() {
+  bgNodes.forEach(n => { try{n.stop?.();n.disconnect?.();}catch{} });
+  bgNodes = [];
+  if (bgGain) { try{bgGain.disconnect();}catch{} bgGain = null; }
+}
+
+function startBg(type, vol) {
+  stopBg();
+  if (!type || type === 'none') return;
+  const ctx = getCtx();
+  bgGain = ctx.createGain();
+  bgGain.gain.setValueAtTime(0, ctx.currentTime);
+  bgGain.gain.linearRampToValueAtTime(vol||0.2, ctx.currentTime + 2.5);
+  bgGain.connect(ctx.destination);
+  bgNodes = []; // reset before any pushes
+  if (type === 'pink') startPink(ctx);
+  else if (type === 'drone') startDrone(ctx);
+  else if (type === 'binaural_theta') startBinaural(ctx, 432, 6);
+  else if (type === 'binaural_alpha') startBinaural(ctx, 432, 10);
+}
+
+function startPink(ctx) {
+  // Long buffer with crossfade-safe loop — no click at loop point
+  const sr = ctx.sampleRate, len = sr * 20;
+  const buf = ctx.createBuffer(1, len, sr);
+  const d = buf.getChannelData(0);
+  let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+  for (let i=0;i<len;i++) {
+    const w = Math.random()*2-1;
+    b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
+    b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
+    b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
+    d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11; b6=w*0.115926;
+  }
+  // Crossfade last 0.1s into first 0.1s to eliminate loop click
+  const fade = Math.floor(sr * 0.1);
+  for (let i=0;i<fade;i++) {
+    const t = i/fade;
+    d[len-fade+i] = d[len-fade+i]*(1-t) + d[i]*t;
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buf; src.loop = true;
+  src.connect(bgGain); src.start();
+  bgNodes = [src];
+}
+
+function startDrone(ctx) {
+  // Oscillators have no loop points — zero click risk
+  const specs = [[50, 0.7], [100, 0.35], [150, 0.18]];
+  const master = ctx.createGain();
+  master.gain.value = 1;
+  master.connect(bgGain);
+  specs.forEach(([freq, amp]) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    g.gain.value = amp;
+    o.connect(g); g.connect(master);
+    o.start();
+    bgNodes.push(o);
+  });
+  bgNodes.push(master);
+}
+
+function startBinaural(ctx, carrier, beat) {
+  // Stereo oscillators — continuous, no loop
+  const splitter = ctx.createChannelMerger(2);
+  splitter.connect(bgGain);
+  [[carrier, 0], [carrier + beat, 1]].forEach(([freq, ch]) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    g.gain.value = 0.45;
+    o.connect(g); g.connect(splitter, 0, ch);
+    o.start();
+    bgNodes.push(o);
+  });
+  bgNodes.push(splitter);
+}
+
+function startBinaural(ctx, carrier, beat) {
+  const merger = ctx.createChannelMerger(2);
+  merger.connect(bgGain);
+  const oscs = [carrier, carrier+beat].map((f,i) => {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type='sine'; o.frequency.value=f; g.gain.value=0.5;
+    o.connect(g); g.connect(merger, 0, i); o.start(); return o;
+  });
+  bgNodes = [...oscs, merger];
+}
+
+/* ═══════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════ */
+const DEFAULT_PROGRAMS = [
+  { id:'p1', name:'Morgen', mode:'simple', totalMinutes:13, intervals:null,
+    sounds:{background:'pink', start:'bowl_small', interval:'none', end:'triple_gong'} },
+  { id:'p2', name:'Tief mit Stufen', mode:'interval', totalMinutes:30, intervals:6,
+    sounds:{background:'binaural_theta', start:'bowl_large', interval:'bell', end:'triple_gong'} }
+];
+
+function loadPrograms() {
+  try { const d = localStorage.getItem('stille_progs'); return d ? JSON.parse(d) : DEFAULT_PROGRAMS; }
+  catch { return DEFAULT_PROGRAMS; }
+}
+function savePrograms(p) { try { localStorage.setItem('stille_progs', JSON.stringify(p)); } catch {} }
+
+function loadHistory() {
+  try { const d = localStorage.getItem('stille_hist'); return d ? JSON.parse(d) : []; }
+  catch { return []; }
+}
+function saveHistory(h) { try { localStorage.setItem('stille_hist', JSON.stringify(h.slice(0,100))); } catch {} }
+
+function calcStreak(hist) {
+  if (!hist?.length) return 0;
+  const dates = [...new Set(hist.map(h => new Date(h.ts).toDateString()))];
+  let n = 0;
+  for (let i=0;i<365;i++) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    if (dates.includes(d.toDateString())) n++;
+    else if (i>0) break;
+  }
+  return n;
+}
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+let programs = loadPrograms();
+let history = loadHistory();
+let editingId = null;
+let currentProgram = null;
+let sessionTimer = null;
+let sessionStart = null;
+let sessionFired = new Set();
+let sessionEnded = false;
+
+let wakeLock = null;
+async function acquireWakeLock() {
+  try {
+    if (navigator.wakeLock) {
+      wakeLock = await navigator.wakeLock.request('screen');
+    }
+  } catch {}
+}
+
+// Simple AudioContext resume when page comes back
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && actx && actx.state === 'suspended') {
+    actx.resume();
+  }
+});
+
+/* ═══════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════ */
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  if (name === 'home') renderHome();
+}
+
+/* ═══════════════════════════════════════════
+   HOME
+═══════════════════════════════════════════ */
+function renderHome() {
+  programs = loadPrograms();
+  history = loadHistory();
+  const streak = calcStreak(history);
+  document.getElementById('streakNum').textContent = streak;
+  document.getElementById('streakLabel').textContent = streak === 1 ? 'TAG' : 'TAGE';
+
+  const last = history[0];
+  if (last) {
+    document.getElementById('lastSession').style.display = '';
+    const d = new Date(last.ts);
+    document.getElementById('lastInfo').textContent =
+      `${last.name} · ${last.mins} min · ${d.toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'})}`;
+  } else {
+    document.getElementById('lastSession').style.display = 'none';
+  }
+
+  const list = document.getElementById('programList');
+  list.innerHTML = '';
+  programs.forEach(p => {
+    const item = document.createElement('div');
+    item.className = 'program-item';
+    const bgLabel = {none:'—',pink:'Rosa Rauschen',drone:'Drone',binaural_theta:'Binaural θ',binaural_alpha:'Binaural α'}[p.sounds.background] || '—';
+    item.innerHTML = `
+      <div style="flex:1">
+        <div class="program-name">${p.name}</div>
+        <div class="program-meta">${p.totalMinutes} min · ${p.mode==='interval'?p.intervals+' Intervalle':'Frei'} · ${bgLabel}</div>
+      </div>
+      <div class="program-actions">
+        <button class="btn-edit" onclick="openEditor('${p.id}')">EDIT</button>
+        <button class="btn-start" onclick="startSession('${p.id}')">START</button>
+      </div>`;
+    list.appendChild(item);
+  });
+}
+
+/* ═══════════════════════════════════════════
+   EDITOR
+═══════════════════════════════════════════ */
+let currentMode = 'simple';
+
+function openNewEditor() {
+  editingId = null;
+  currentMode = 'simple';
+  document.getElementById('editorTitle').textContent = 'Neues Programm';
+  document.getElementById('eName').value = '';
+  document.getElementById('eDuration').value = 13;
+  document.getElementById('eIntervals').value = 4;
+  document.getElementById('sBg').value = 'pink';
+  document.getElementById('sStart').value = 'bowl_large';
+  document.getElementById('sInterval').value = 'bell';
+  document.getElementById('sEnd').value = 'triple_gong';
+  document.getElementById('btnDelete').style.display = 'none';
+  setMode('simple');
+  showScreen('editor');
+}
+
+function openEditor(id) {
+  const p = programs.find(x => x.id === id);
+  if (!p) return;
+  editingId = id;
+  currentMode = p.mode;
+  document.getElementById('editorTitle').textContent = 'Bearbeiten';
+  document.getElementById('eName').value = p.name;
+  document.getElementById('eDuration').value = p.totalMinutes;
+  document.getElementById('eIntervals').value = p.intervals || 4;
+  document.getElementById('sBg').value = p.sounds.background || 'none';
+  document.getElementById('sStart').value = p.sounds.start || 'none';
+  document.getElementById('sInterval').value = p.sounds.interval || 'none';
+  document.getElementById('sEnd').value = p.sounds.end || 'triple_gong';
+  document.getElementById('btnDelete').style.display = '';
+  setMode(p.mode);
+  showScreen('editor');
+}
+
+function setMode(m) {
+  currentMode = m;
+  document.getElementById('modeSimple').classList.toggle('active', m === 'simple');
+  document.getElementById('modeInterval').classList.toggle('active', m === 'interval');
+  document.getElementById('intervalField').style.display = m === 'interval' ? '' : 'none';
+  document.getElementById('rowInterval').style.display = m === 'interval' ? '' : 'none';
+  updateIntervalLabel();
+}
+
+function updateIntervalLabel() {
+  const dur = parseInt(document.getElementById('eDuration').value) || 0;
+  const inv = parseInt(document.getElementById('eIntervals').value) || 1;
+  const mins = Math.round(dur / inv);
+  document.getElementById('intervalLabel').textContent = `Anzahl Intervalle — je ~${mins} min`;
+}
+document.addEventListener('input', e => {
+  if (e.target.id === 'eDuration' || e.target.id === 'eIntervals') updateIntervalLabel();
+});
+
+function updateTestBtns() {}
+
+function testSound(which) {
+  if (which === 'bg') {
+    const val = document.getElementById('sBg').value;
+    if (!val || val === 'none') return;
+    clearTimeout(bgTestTimeout);
+    startBg(val, 0.2);
+    bgTestTimeout = setTimeout(stopBg, 5000);
+  } else {
+    const map = {start:'sStart', interval:'sInterval', end:'sEnd'};
+    const val = document.getElementById(map[which])?.value;
+    if (val) playSound(val);
+  }
+}
+
+function saveProgram() {
+  const name = document.getElementById('eName').value.trim();
+  if (!name) return;
+  stopBg();
+  const p = {
+    id: editingId || `p${Date.now()}`,
+    name,
+    mode: currentMode,
+    totalMinutes: Math.max(1, parseInt(document.getElementById('eDuration').value) || 1),
+    intervals: currentMode === 'interval' ? Math.max(2, parseInt(document.getElementById('eIntervals').value) || 2) : null,
+    sounds: {
+      background: document.getElementById('sBg').value,
+      start: document.getElementById('sStart').value,
+      interval: document.getElementById('sInterval').value,
+      end: document.getElementById('sEnd').value
+    }
+  };
+  if (editingId) {
+    programs = programs.map(x => x.id === editingId ? p : x);
+  } else {
+    programs = [...programs, p];
+  }
+  savePrograms(programs);
+  showScreen('home');
+}
+
+function deleteProgram() {
+  if (!editingId) return;
+  programs = programs.filter(p => p.id !== editingId);
+  savePrograms(programs);
+  showScreen('home');
+}
+
+// Dynamic save button color
+document.getElementById('eName').addEventListener('input', e => {
+  const btn = document.getElementById('btnSave');
+  btn.style.background = e.target.value.trim() ? 'var(--accent)' : 'var(--border)';
+  btn.style.color = e.target.value.trim() ? '#0a0906' : 'var(--muted)';
+  btn.style.cursor = e.target.value.trim() ? 'pointer' : 'default';
+});
+
+/* ═══════════════════════════════════════════
+   SESSION
+═══════════════════════════════════════════ */
+function fmt(s) {
+  return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+}
+
+function startSession(id) {
+  const p = programs.find(x => x.id === id);
+  if (!p) return;
+  currentProgram = p;
+  sessionFired = new Set();
+  sessionEnded = false;
+
+  document.getElementById('sessionName').textContent = p.name;
+  document.getElementById('sessionTimer').textContent = fmt(p.totalMinutes * 60);
+  document.getElementById('sessionTimer').classList.remove('ending');
+  document.getElementById('progressLine').style.width = '0%';
+  document.getElementById('btnAbort').style.display = '';
+
+  showScreen('session');
+
+  acquireWakeLock();
+
+  // Silent audio + MediaSession keepalive — wrapped in try-catch for compatibility
+  try {
+    if (!window._silentAudio) {
+      const sr = 8000, samples = sr;
+      const buf = new ArrayBuffer(44 + samples);
+      const v = new DataView(buf);
+      const s = (o, t) => { for(let i=0;i<t.length;i++) v.setUint8(o+i, t.charCodeAt(i)); };
+      s(0,'RIFF'); v.setUint32(4, 36+samples, true);
+      s(8,'WAVE'); s(12,'fmt ');
+      v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+      v.setUint32(24,sr,true); v.setUint32(28,sr,true);
+      v.setUint16(32,1,true); v.setUint16(34,8,true);
+      s(36,'data'); v.setUint32(40,samples,true);
+      for(let i=0;i<samples;i++) v.setUint8(44+i, 128);
+      const url = URL.createObjectURL(new Blob([buf],{type:'audio/wav'}));
+      window._silentAudio = new Audio(url);
+      window._silentAudio.loop = true;
+      window._silentAudio.volume = 0.001;
+    }
+    window._silentAudio.play().catch(()=>{});
+  } catch(e) {}
+
+  try {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: 'Stille — ' + p.name,
+        artist: p.totalMinutes + ' Minuten'
+      });
+      navigator.mediaSession.playbackState = 'playing';
+      navigator.mediaSession.setActionHandler('play', () => {});
+      navigator.mediaSession.setActionHandler('pause', () => {});
+      navigator.mediaSession.setActionHandler('stop', () => abortSession());
+    }
+  } catch(e) {}
+
+  setTimeout(() => playSound(p.sounds.start), 200);
+  if (p.sounds.background !== 'none') startBg(p.sounds.background);
+
+  const totalSec = p.totalMinutes * 60;
+  const intervalTimes = [];
+  if (p.mode === 'interval' && p.intervals) {
+    const step = totalSec / p.intervals;
+    for (let i = 1; i < p.intervals; i++) intervalTimes.push(Math.round(step * i));
+  }
+
+  sessionStart = Date.now();
+
+  sessionTimer = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
+    const remaining = Math.max(0, totalSec - elapsed);
+    const progress = Math.min(1, elapsed / totalSec);
+
+    document.getElementById('sessionTimer').textContent = fmt(remaining);
+    document.getElementById('progressLine').style.width = `${progress * 100}%`;
+
+    intervalTimes.forEach(t => {
+      if (elapsed >= t && !sessionFired.has(t)) {
+        sessionFired.add(t);
+        playSound(p.sounds.interval);
+      }
+    });
+
+    if (elapsed >= totalSec && !sessionEnded) {
+      sessionEnded = true;
+      clearInterval(sessionTimer);
+      if (window._silentAudio) window._silentAudio.pause();
+      if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'none';
+      stopBg();
+      document.getElementById('sessionTimer').classList.add('ending');
+      document.getElementById('btnAbort').style.display = 'none';
+      playSound(p.sounds.end);
+      const delay = p.sounds.end === 'triple_gong' ? 6500 : 3000;
+      setTimeout(() => showEnd({ name: p.name, mins: p.totalMinutes, ts: Date.now() }), delay);
+    }
+  }, 500);
+}
+
+function abortSession() {
+  sessionEnded = true;
+  clearInterval(sessionTimer);
+  if (window._silentAudio) window._silentAudio.pause();
+  if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'none';
+  stopBg();
+  showScreen('home');
+}
+
+function showEnd(result) {
+  history = [result, ...history];
+  saveHistory(history);
+  const streak = calcStreak(history);
+  document.getElementById('endMins').textContent = `${result.mins}′`;
+  document.getElementById('endProg').textContent = result.name;
+  document.getElementById('endStreakNum').textContent = streak;
+  document.getElementById('endStreakLabel').textContent = streak === 1 ? 'Tag in Folge' : 'Tage in Folge';
+  showScreen('end');
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+renderHome();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
